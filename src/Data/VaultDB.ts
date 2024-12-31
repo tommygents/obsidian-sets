@@ -719,22 +719,34 @@ export class VaultDB {
     private getObjectData(
         filePath: string,
         metadata?: CachedMetadata
-    ): ObjectData {
-        if (metadata === undefined) {
-            metadata = this.app.metadataCache.getCache(filePath) || undefined;
+      ): ObjectData {
+        if (!metadata) {
+          metadata = this.app.metadataCache.getCache(filePath) || undefined;
         }
         const tfile = this.app.vault.getAbstractFileByPath(filePath);
-        if (!tfile) throw Error(`File ${filePath} not found!`);
-        if (!(tfile instanceof TFile)) throw Error(`${filePath} is a folder`);
-        const ob = {
-            name: filePath,
-            file: tfile,
-            //@ts-ignore
-            frontmatter: metadata.frontmatter,
-            db: this,
+        if (!tfile || !(tfile instanceof TFile)) {
+          throw Error(`${filePath} is not a valid file`);
+        }
+      
+        // Merge inline tags into frontmatter.tags
+        if (metadata?.tags?.length) {
+          metadata.frontmatter = metadata.frontmatter || {};
+          metadata.frontmatter.tags = metadata.frontmatter.tags || [];
+          for (const t of metadata.tags) {
+            const cleanTag = t.tag.replace(/^#/, ""); 
+            if (!metadata.frontmatter.tags.includes(cleanTag)) {
+              metadata.frontmatter.tags.push(cleanTag);
+            }
+          }
+        }
+      
+        return {
+          name: filePath,
+          file: tfile,
+          frontmatter: metadata?.frontmatter,
+          db: this,
         };
-        return ob;
-    }
+      }
 
     private async ensureFolder(path: string) {
         let folder = this.app.vault.getAbstractFileByPath(path);

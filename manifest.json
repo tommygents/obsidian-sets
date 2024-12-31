@@ -1,10 +1,10 @@
 {
-	"id": "sets",
-	"name": "Sets",
+	"id": "sets-modified",
+	"name": "Sets (modified)",
 	"version": "1.0.14",
 	"minAppVersion": "1.4.4",
-	"description": "Create, edit and search sets of notes like Notion or AnyType DBs",
-	"author": "Gabriele Cannata",
+	"description": "Create, edit and search sets of notes like Notion or AnyType DBs. Extending functionality.",
+	"author": "Gabriele Cannata, modified in test env by me",
 	"authorUrl": "https://github.com/Canna71",
 	"isDesktopOnly": false
 }
