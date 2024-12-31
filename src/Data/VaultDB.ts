@@ -716,10 +716,7 @@ export class VaultDB {
         return this.getObjectData(filePath);
     }
 
-    private getObjectData(
-        filePath: string,
-        metadata?: CachedMetadata
-      ): ObjectData {
+    private getObjectData(filePath: string, metadata?: CachedMetadata): ObjectData {
         if (!metadata) {
           metadata = this.app.metadataCache.getCache(filePath) || undefined;
         }
@@ -728,14 +725,42 @@ export class VaultDB {
           throw Error(`${filePath} is not a valid file`);
         }
       
-        // Merge inline tags into frontmatter.tags
-        if (metadata?.tags?.length) {
-          metadata.frontmatter = metadata.frontmatter || {};
-          metadata.frontmatter.tags = metadata.frontmatter.tags || [];
-          for (const t of metadata.tags) {
-            const cleanTag = t.tag.replace(/^#/, ""); 
-            if (!metadata.frontmatter.tags.includes(cleanTag)) {
-              metadata.frontmatter.tags.push(cleanTag);
+        // If there's frontmatter, ensure we have a place for tags
+        // (raw tags) and expandedTags (slash expansions).
+        metadata.frontmatter = metadata.frontmatter || {};
+        if (!Array.isArray(metadata.frontmatter.tags)) {
+          metadata.frontmatter.tags = [];
+        }
+        if (!Array.isArray(metadata.frontmatter.expandedTags)) {
+          metadata.frontmatter.expandedTags = [];
+        }
+      
+        // 1) Clean up frontmatter tags
+        metadata.frontmatter.tags = metadata.frontmatter.tags.map((tag: string) =>
+          tag.replace(/^"|"$/g, "").replace(/^#/, "")
+        );
+      
+        // 2) Merge inline tags into frontmatter.tags
+        if (metadata.tags?.length) {
+          for (const inlineTag of metadata.tags) {
+            const rawInline = inlineTag.tag.replace(/^#/, "");
+            if (!metadata.frontmatter.tags.includes(rawInline)) {
+              metadata.frontmatter.tags.push(rawInline);
+            }
+          }
+        }
+      
+        // 3) Expand slash-based tags into partial “parent” segments
+        const combinedRawTags = new Set(metadata.frontmatter.tags);
+        for (const rawTag of combinedRawTags) {
+          const parts = rawTag.split("/");
+          // Example: "effort/someday/gameidea" => 
+          //   - "effort/someday"
+          //   - "effort/someday/gameidea"
+          for (let i = 1; i <= parts.length; i++) {
+            const partial = parts.slice(0, i).join("/");
+            if (!metadata.frontmatter.expandedTags.includes(partial)) {
+              metadata.frontmatter.expandedTags.push(partial);
             }
           }
         }
@@ -743,10 +768,11 @@ export class VaultDB {
         return {
           name: filePath,
           file: tfile,
-          frontmatter: metadata?.frontmatter,
+          frontmatter: metadata.frontmatter,
           db: this,
         };
       }
+      
 
     private async ensureFolder(path: string) {
         let folder = this.app.vault.getAbstractFileByPath(path);

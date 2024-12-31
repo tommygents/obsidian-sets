@@ -94,7 +94,16 @@ export default class SetsPlugin extends Plugin {
 
     this.registerEvent(this.app.workspace.on("file-menu", this.onFileMenu));
     this.registerEvent(this.app.workspace.on("editor-menu", this.onEditorMenu));
+ 
+    const mtm = this.app.metadataTypeManager;
+  if (mtm?.setType) {
+    // In some versions, “tags” might be spelled "tag" or "tags" 
+    // depending on how they've set up the property widget type.
+    // If “tags” doesn’t work, try “tag” or check in “Operator.ts” or “registeredTypeWidgets”.
+    mtm.setType("expandedTags", "tags");
+    mtm.savePropertyInfo?.();
   }
+}
 
   async loadSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());

@@ -47,7 +47,7 @@ export function getPropertyData(app: App): PropertyData[] {
         };
     });
 
-    const intrinsics = [
+    const intrinsics: PropertyData[] = [
         {
             name: new IntrinsicAttributeDefinition(app, IntrinsicAttributeKey.FileName).displayName(),
             key: IntrinsicAttributeKey.FileName,
@@ -81,6 +81,18 @@ export function getPropertyData(app: App): PropertyData[] {
             typeIcon: "lucide-clock"
         } 
     ]
-
+    intrinsics.push({
+        name: "Tags (with subtags)",   // Display name in the dropdown
+        key: "expandedTags",           // The key you handle in getObjectData()
+        count: Number.NaN,
+        typeName: "Tags",              // or "Text"—depending on how you treat it
+        typeKey: "tags",               // so "hasany" / "hasnone" works
+        typeIcon: "lucide-tags",       // or "lucide-hash", "lucide-tag", etc.
+      });
+      
+      //console.log(getPropertyData(app));
+      console.log("Final property list from getPropertyData:", 
+        [...intrinsics, ...ret]
+      );
     return [...intrinsics, ...ret];
 }
