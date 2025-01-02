@@ -96,10 +96,10 @@ export default class SetsPlugin extends Plugin {
     this.registerEvent(this.app.workspace.on("editor-menu", this.onEditorMenu));
  
     const mtm = this.app.metadataTypeManager;
+
+    //Allows us to use the expandedTags property type, which searches for a tag and all of its subtags, as opposed to just the tag itself.
   if (mtm?.setType) {
-    // In some versions, “tags” might be spelled "tag" or "tags" 
-    // depending on how they've set up the property widget type.
-    // If “tags” doesn’t work, try “tag” or check in “Operator.ts” or “registeredTypeWidgets”.
+
     mtm.setType("expandedTags", "tags");
     mtm.savePropertyInfo?.();
   }
